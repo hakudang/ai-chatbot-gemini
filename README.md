@@ -129,6 +129,18 @@ Dự án được quản lý chặt chẽ thông qua hệ thống tài liệu c�
 - Logic: Business Rules → Use Case Specification.
 - Xác thực (Validation): Validation Specification → Test Case Specification.
 
+### Ý nghĩa từng loại tài liệu:
+- Tài liệu Client Requirements và System Requirements là quan trọng nhất để làm rõ yêu cầu khách hàng và chuyển giao cho team phát triển.
+- Tài liệu Business Rules và Use Case Specification giúp định nghĩa chi tiết các quy tắc nghiệp vụ và kịch bản sử dụng.
+- Tài liệu Validation Specification và Test Case Specification đảm bảo hệ thống được kiểm thử đầy đủ theo yêu cầu đã định nghĩa.
+
+### Vai trò BrSE - Các tài liệu phụ trách:
+- Các tài liệu BrSE phụ trách soạn thảo và duy trì bao gồm:
+  - Client Requirements
+  - System Requirements
+  - Business Rules
+  - Use Case Specification 
+  
 ## 8. Tổ chức cây thư mục
 ```text
 / ai-chatbot-gemini

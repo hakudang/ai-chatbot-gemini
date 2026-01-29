@@ -1,7 +1,7 @@
 # Client Requirements (CR) – AI Chatbot (Gemini)
 ```
-Version: 1.0  
-Owner: BrSE  
+Version: 1.1 
+Owner: BrSE Dang
 Status: Draft  
 ```
 
@@ -58,6 +58,21 @@ Chatbot hiển thị dạng popup ở góc phải dưới trang (floating widget
 - Hỗ trợ nhiều model/provider (OpenAI, Claude…).
 
 ## 4. Yêu cầu chức năng (Functional Requirements)
+
+Bảng tổng hợp yêu cầu chức năng:
+| ID     | Mô tả ngắn                      | Mô tả chi tiết                                   |
+|--------|----------------------------------|--------------------------------------------------|
+| FR-01  | Toggler (Mở/Đóng chatbot)       | Nút floating để mở/đóng chatbot popup.                        |
+| FR-02  | Hiển thị lời chào mặc định | Tin nhắn bot chào mừng khi mở lần đầu.   |
+| FR-03  | Gửi tin nhắn văn bản            | Gửi text, hiển thị user-message và bot-message.              |
+| FR-04  | Enter/   Shift+Enter              | Enter gửi tin, Shift+Enter xuống dòng (desktop).            |
+| FR-05  | Tự động co giãn ô nhập          | Textarea tự tăng chiều cao theo nội dung.                      |
+| FR-06  | Upload ảnh + Preview              | Chọn ảnh, hiển thị preview, hủy đính kèm.               |
+| FR-07  | Gửi ảnh kèm prompt (Vision)     | Gửi ảnh + text tới Gemini, bot trả lời theo ảnh. |
+| FR-08  | Emoji picker                    | Chọn emoji và chèn vào vị trí con trỏ trong textarea.                      |
+| FR-09  | Thinking indicator              | Hiển thị trạng thái “thinking” khi chờ AI.  |
+| FR-10  | Xử lý lỗi hiển thị cho người dùng | Hiển thị lỗi API/network rõ ràng, không crash UI. |
+
 ### FR-01: Toggler (Mở/Đóng chatbot)
 - Có nút floating để mở chatbot.
 - Khi mở: popup hiển thị, icon chuyển trạng thái.
@@ -204,9 +219,39 @@ Chatbot hiển thị dạng popup ở góc phải dưới trang (floating widget
 
 ---
 
-## 9. Open Points (cần chốt để vào thiết kế chi tiết)
-- OP-01: Bot persona & phạm vi tri thức (chỉ FAQ của site hay “hỏi gì cũng được”?)  
-- OP-02: Ngôn ngữ mặc định (VI/EN/JP) và có auto-detect không?  
-- OP-03: Có cần lưu lịch sử chat (localStorage/server) không?  
-- OP-04: Giới hạn ảnh (kích thước/dung lượng) và format hỗ trợ cụ thể (png/jpg/webp).  
-- OP-05: Cách deploy proxy (Node server riêng, Cloud Functions, hoặc Vercel/Netlify serverless).  
+## 9. Open Points - Resolved
+
+### OP-01: Bot persona & phạm vi tri thức
+**Câu hỏi**: Chỉ FAQ của site hay "hỏi gì cũng được"?  
+**Quyết định**: Hỏi gì cũng được - chatbot hoạt động như general-purpose assistant.
+
+### OP-02: Ngôn ngữ mặc định
+**Câu hỏi**: VI/EN/JP và có auto-detect không?  
+**Quyết định**: Tiếng Anh làm ngôn ngữ mặc định, có hỗ trợ auto-detect ngôn ngữ từ input của user.
+
+### OP-03: Lưu lịch sử chat
+**Câu hỏi**: Có cần lưu lịch sử chat (localStorage/server) không?  
+**Quyết định**: Lưu lịch sử chat trên localStorage để giữ khi refresh trang.
+
+### OP-04: Giới hạn ảnh
+**Câu hỏi**: Kích thước/dung lượng và format hỗ trợ cụ thể?  
+**Quyết định**: 
+- Giới hạn dung lượng: ≤ 5MB
+- Format hỗ trợ: PNG, JPG/JPEG, WebP
+
+### OP-05: Cách deploy proxy
+**Câu hỏi**: Node server riêng, Cloud Functions, hoặc Vercel/Netlify serverless?  
+**Quyết định**: 
+- Phase 1: Ứng dụng chạy trên browser client (API key exposed - chỉ demo/development)
+- Phase 2 (future): Có thể mở rộng với Node server riêng hoặc serverless function
+
+## 10. Next Steps
+
+- ✳️ Viết System Requirements v1.0
+- ✳️ Chuẩn hóa Business Rules + Use Case
+
+## 11. Revision History
+| Version | Date       | Description               | Author  |
+|---------|------------|---------------------------|---------|
+| 1.0     | 2026-01-29 | Initial draft version     | BrSE Dang   |
+| 1.1     | 2026-01-29 | Resolved open points, clarified requirements   | BrSE Dang   |
