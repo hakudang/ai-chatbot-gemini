@@ -47,7 +47,7 @@ Dựa vào các tài liệu, bạn có thể chia app.js thành các phần ch�
 - Lưu trữ dữ liệu ảnh hiện tại (Base64, mimeType).
 - Trạng thái đóng/mở của chatbot.
 ### 2. Khởi tạo & Khôi phục (Initialization):
-- Đọc dữ liệu từ localStorage với key chatHistory.
+- Đọc dữ liệu từ localStorage với key `chatHistory`.
 - Nếu dữ liệu lỗi, tiến hành xóa bộ nhớ để bắt đầu phiên mới.
 - Render lại lịch sử lên UI khi load trang.
 ### 3. Xử lý Sự kiện UI (Event Handlers):
