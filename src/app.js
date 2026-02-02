@@ -60,7 +60,6 @@ function saveChatHistory() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
 }
 
-
 /*************************************************
  * 9 - Events
  *************************************************/
