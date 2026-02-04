@@ -153,6 +153,7 @@ Dự án được quản lý chặt chẽ thông qua hệ thống tài liệu c�
       - usecase_spec_v1.0.md
       - validation_spec_v1.0.md
       - testcase_spec_v1.0.md
+      - sc-01.png
   / src
     / components
     / styles
@@ -162,6 +163,6 @@ Dự án được quản lý chặt chẽ thông qua hệ thống tài liệu c�
   / tests
     - unit_tests.js
     - integration_tests.js
-  README.md
-  .gitignore
+  - README.md
+  - .gitignore
 ```
