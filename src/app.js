@@ -92,12 +92,18 @@ function createMessageElement(role, html) {
   return div;
 }
 
-function renderMessage(role, text) {
-  const html =
-    role === "user"
-      ? `<div class="message-text">${text}</div>`
-      : `<span class="bot-avatar material-symbols-rounded">smart_toy</span>
+function renderMessage(role, text, imageData = null) {
+  let html;
+  
+  if (role === "user") {
+    html = `<div class="message-text">${text}</div>`;
+    if (imageData) {
+      html += `<img src="data:${imageData.mimeType};base64,${imageData.data}" class="attachment" />`;
+    }
+  } else {
+    html = `<span class="bot-avatar material-symbols-rounded">smart_toy</span>
         <div class="message-text">${text} </div>`;
+  }
 
   chatBody.appendChild(createMessageElement(role, html));
   scrollToBottom();
@@ -180,15 +186,16 @@ async function handleSendMessage(e) {
 
   if (!canSendMessage(text, hasImage)) return;
 
-  // Render user message
-  renderMessage("user", text);
+  // Render user message with image if attached
+  renderMessage("user", text, currentAttachment);
   chatHistory.push({ role: "user", text });
   saveChatHistory();
 
-  // Reset input & attachment
+  // Reset input fields (but keep currentAttachment for API call)
   messageInput.value = "";
+  fileInput.value = "";
+  fileUploadWrapper.querySelector("img").src = "#";
   fileUploadWrapper.classList.remove("file-uploaded");
-  currentAttachment = null;
 
   // Thinking indicator
   const thinkingDiv = renderThinking();
@@ -200,6 +207,9 @@ async function handleSendMessage(e) {
     saveChatHistory();
   } catch (err) {
     replaceThinking(thinkingDiv, err.message, true);
+  } finally {
+    // Reset attachment after API call is done
+    currentAttachment = null;
   }
 }
 
@@ -213,6 +223,9 @@ messageInput.addEventListener("keydown", e => {
     handleSendMessage(e);
   }
 });
+
+const fileUploadBtn = document.querySelector("#file-upload");
+fileUploadBtn.addEventListener("click", () => fileInput.click());
 
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
@@ -232,6 +245,8 @@ fileInput.addEventListener("change", () => {
 
 fileCancelBtn.addEventListener("click", () => {
   currentAttachment = null;
+  fileInput.value = "";
+  fileUploadWrapper.querySelector("img").src = "#";
   fileUploadWrapper.classList.remove("file-uploaded");
 });
 
