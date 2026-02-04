@@ -222,6 +222,7 @@ chatForm.addEventListener("submit", handleSendMessage);
 
 messageInput.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
+    e.preventDefault();
     handleSendMessage(e);
   }
 });
