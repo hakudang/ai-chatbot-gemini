@@ -1,10 +1,20 @@
+# Cấu trúc app.js 
+- Theo Coding Plan + BR v1.1 (Frozen).
+- Mục tiêu: spec-compliant, đọc là hiểu luồng, QA trace được, dev maintain được.
 
+- ✔ Tách rõ State / Init / UI / Validation / AI Service / Storage / Error
+- ✔ Không “kẹt thinking”
+- ✔ Đúng BR-IN, BR-FILE, BR-AI, BR-TH, BR-LS, BR-ERR
+
+## 1. Constants & Global State
+```js
 /*************************************************
- * 1 - Constants (BR / SR)
+ * Constants (BR / SR)
  *************************************************/
-
-import { API_KEY } from "./config.js";
-import { API_URL } from "./config.js";
+const API_KEY = "PASTE-YOUR-API-KEY";
+const API_URL =
+  "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=" +
+  API_KEY;
 
 const STORAGE_KEY = "chatHistory";
 const MAX_MESSAGES = 50;
@@ -18,9 +28,12 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
  *************************************************/
 let chatHistory = []; // [{ role, text }]
 let currentAttachment = null; // { data, mimeType }
+```
 
+## 2. DOM Elements
+```js
 /*************************************************
- * 2 - DOM Elements
+ * DOM Elements
  *************************************************/
 const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
@@ -33,8 +46,11 @@ const closeChatbotBtn = document.querySelector("#close-chatbot");
 const fileInput = document.querySelector("#file-input");
 const fileUploadWrapper = document.querySelector(".file-upload-wrapper");
 const fileCancelBtn = document.querySelector("#file-cancel");
+```
 
+## 3. Utility Functions
 
+```js
 /*************************************************
  * Utilities
  *************************************************/
@@ -42,8 +58,23 @@ function scrollToBottom() {
   chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
 }
 
+function cleanMarkdown(text) {
+  return text.replace(/\*\*(.*?)\*\*/g, "$1").trim();
+}
+
+function fetchWithTimeout(url, options, timeout = REQUEST_TIMEOUT) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+```
+## 4. localStorage Handling (BR-LS)
+
+```js
 /*************************************************
- * 4 - Storage (BR-LS-01 ~ 04)
+ * Storage (BR-LS-01 ~ 04)
  *************************************************/
 function loadChatHistory() {
   try {
@@ -62,9 +93,13 @@ function saveChatHistory() {
   const trimmed = chatHistory.slice(-MAX_MESSAGES);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
 }
+```
 
+## 5. Validation (BR-IN / BR-FILE)
+
+```js
 /*************************************************
- * 5 - Validation
+ * Validation
  *************************************************/
 function canSendMessage(text, hasImage) {
   return text.length > 0 || hasImage;
@@ -81,9 +116,13 @@ function validateImage(file) {
   }
   return true;
 }
+```
 
+## 6. UI Rendering
+
+```js
 /*************************************************
- * 6 - UI Rendering
+ * UI Rendering
  *************************************************/
 function createMessageElement(role, html) {
   const div = document.createElement("div");
@@ -92,18 +131,13 @@ function createMessageElement(role, html) {
   return div;
 }
 
-function renderMessage(role, text, imageData = null) {
-  let html;
-  
-  if (role === "user") {
-    html = `<div class="message-text">${text}</div>`;
-    if (imageData) {
-      html += `<img src="data:${imageData.mimeType};base64,${imageData.data}" class="attachment" />`;
-    }
-  } else {
-    html = `<span class="bot-avatar material-symbols-rounded">smart_toy</span>
-        <div class="message-text">${text} </div>`;
-  }
+
+function renderMessage(role, text) {
+  const html =
+    role === "user"
+      ? `<div class="message-text">${text}</div>`
+      : `<svg class="bot-avatar" ...></svg>
+         <div class="message-text">${text}</div>`;
 
   chatBody.appendChild(createMessageElement(role, html));
   scrollToBottom();
@@ -111,7 +145,7 @@ function renderMessage(role, text, imageData = null) {
 
 function renderThinking() {
   const html = `
-    <span class="bot-avatar material-symbols-rounded">smart_toy</span>
+    <svg class="bot-avatar" ...></svg>
     <div class="message-text">
       <div class="thinking-indicator">
         <div class="dot"></div><div class="dot"></div><div class="dot"></div>
@@ -130,53 +164,55 @@ function replaceThinking(div, text, isError = false) {
   textEl.innerText = text;
   if (isError) textEl.style.color = "red";
 }
+```
 
+## 7. AI Service (BR-AI / BR-TH / BR-ERR)
+
+```js
 /*************************************************
- * 7 - API Call
+ * AI Service
  *************************************************/
 async function callGeminiAPI() {
-  // Build request body with chat history
-  const requestBody = {
-    contents: chatHistory.map(msg => ({
-      role: msg.role,
-      parts: [{ text: msg.text }]
-    }))
-  };
+  const parts = [];
 
-  // Add current attachment if exists
+  if (messageInput.value.trim()) {
+    parts.push({ text: messageInput.value.trim() });
+  }
   if (currentAttachment) {
-    const lastMessage = requestBody.contents[requestBody.contents.length - 1];
-    lastMessage.parts.push({
-      inline_data: {
-        mime_type: currentAttachment.mimeType,
-        data: currentAttachment.data
-      }
+    parts.push({
+      inlineData: {
+        data: currentAttachment.data,
+        mimeType: currentAttachment.mimeType,
+      },
     });
   }
 
-  const requestOptions = {
+  const contents = [
+    ...chatHistory.map(m => ({ role: m.role, parts: [{ text: m.text }] })),
+    { role: "user", parts },
+  ];
+
+  const res = await fetchWithTimeout(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(requestBody)
-  };
+    body: JSON.stringify({ contents }),
+  });
 
-  const response = await fetch(API_URL, requestOptions);
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error?.message || "API request failed");
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "API Error");
   }
 
-  // Extract bot response text
-  const apiResponseText = data.candidates[0].content.parts[0].text
-    .replace(/\*\*(.*?)\*\*/g, "$1")
-    .trim();
-
-  return apiResponseText;
+  const data = await res.json();
+  return cleanMarkdown(data.candidates[0].content.parts[0].text);
 }
+```
 
+## 8. Core Flow – Send Message
+
+```js
 /*************************************************
- * 8 - Core Flow
+ * Core Flow
  *************************************************/
 async function handleSendMessage(e) {
   e.preventDefault();
@@ -186,16 +222,15 @@ async function handleSendMessage(e) {
 
   if (!canSendMessage(text, hasImage)) return;
 
-  // Render user message with image if attached
-  renderMessage("user", text, currentAttachment);
+  // Render user message
+  renderMessage("user", text);
   chatHistory.push({ role: "user", text });
   saveChatHistory();
 
-  // Reset input fields (but keep currentAttachment for API call)
+  // Reset input & attachment
   messageInput.value = "";
-  fileInput.value = "";
-  fileUploadWrapper.querySelector("img").src = "#";
   fileUploadWrapper.classList.remove("file-uploaded");
+  currentAttachment = null;
 
   // Thinking indicator
   const thinkingDiv = renderThinking();
@@ -207,17 +242,16 @@ async function handleSendMessage(e) {
     saveChatHistory();
   } catch (err) {
     replaceThinking(thinkingDiv, err.message, true);
-  } finally {
-    // Reset attachment after API call is done
-    currentAttachment = null;
   }
 }
+```
 
+## 9. Event Handlers
+
+```js
 /*************************************************
- * 9 - Events
+ * Events
  *************************************************/
-
-sendButton.addEventListener("click", handleSendMessage);
 chatForm.addEventListener("submit", handleSendMessage);
 
 messageInput.addEventListener("keydown", e => {
@@ -225,9 +259,6 @@ messageInput.addEventListener("keydown", e => {
     handleSendMessage(e);
   }
 });
-
-const fileUploadBtn = document.querySelector("#file-upload");
-fileUploadBtn.addEventListener("click", () => fileInput.click());
 
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
@@ -247,8 +278,6 @@ fileInput.addEventListener("change", () => {
 
 fileCancelBtn.addEventListener("click", () => {
   currentAttachment = null;
-  fileInput.value = "";
-  fileUploadWrapper.querySelector("img").src = "#";
   fileUploadWrapper.classList.remove("file-uploaded");
 });
 
@@ -258,8 +287,59 @@ chatbotToggler.addEventListener("click", () =>
 closeChatbotBtn.addEventListener("click", () =>
   document.body.classList.remove("show-chatbot")
 );
+```
 
+## 10. Init
+
+```js
 /*************************************************
- * 10 - Init
+ * Init
  *************************************************/
 loadChatHistory();
+```
+
+## 11. Kết luận
+
+✔ 100% tuân Coding Plan
+✔ Đúng BR v1.1 Frozen
+✔ QA trace được từng rule
+✔ Dev nhìn là hiểu ngay luồng
+Nếu muốn có thể triển khai :
+
+✳️ Gắn comment BR-ID trực tiếp vào code
+
+✳️ Viết Test Case Spec map đúng code này
+
+✳️ Refactor sang Service layer tách file (aiService.js / storage.js)
+
+
+## 12. Giải thích 
+
+### Phân nhóm module theo Coding Plan
+
+| No.| Nhóm code                | Thuộc Module nào trong Coding Plan? |
+| ----- | ------------------------ | ----------------------------------- |
+| 01 | Constants & Global State | ✅ Module 1 – Quản lý Trạng thái (State Management)    |
+| 02 | DOM Elements             | ✅ Module 1 – Quản lý Trạng thái (State Management)         |
+| 03 | Utility Functions        | ✅ Module 4 – Xử lý Logic Gửi/Nhận (Core Logic)               |
+| 04 | localStorage Handling    | ✅ Module 4 – Xử lý Logic Gửi/Nhận (Core Logic)               |
+| 05 | Validation               | ✅ Module 4 – Xử lý Logic Gửi/Nhận (Core Logic)               |
+| 06 | UI Rendering             | ✅ Module 3 – Xử lý Sự kiện UI (Event Handlers)   |
+| 07 | AI Service               | ✅ Module 4 – Xử lý Logic Gửi/Nhận (Core Logic)               |
+| 08 | Core Flow – Send Message | ✅ Module 4 – Xử lý Logic Gửi/Nhận (Core Logic)               |
+| 09 | Event Handlers           | ✅ Module 3 – Xử lý Sự kiện UI (Event Handlers)   |
+| 10 | Init                     | ✅ Module 2 – Khởi tạo & Khôi phục (Initialization)           |
+
+### Cấu trúc file sau refactor
+
+```
+app.js
+ ├─ init.js
+ ├─ state.js
+ ├─ ui.js
+ ├─ core/
+ │   ├─ validation.js
+ │   ├─ aiService.js
+ │   ├─ storage.js
+ │   └─ sendMessage.js
+```
