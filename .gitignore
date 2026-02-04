@@ -1,5 +1,6 @@
 # Temporary files
 temp/
+tem/
 
 # Config files with API keys
 src/config.js
