@@ -1,4 +1,6 @@
-# システム要件定義書（System Requirements, SR）– AI Chatbot（Google Gemini API）
+# システム要件定義書（System Requirements, SR）
+
+AI Chatbot（Google Gemini API）
 
 ```text
 Version : 1.1

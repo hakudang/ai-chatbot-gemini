@@ -1,5 +1,6 @@
 # ユースケース仕様書（Use Case Specification）  
-**AI チャットボット（Google Gemini API）**
+
+AI チャットボット（Google Gemini API）
 
 ```text
 Version : 1.0

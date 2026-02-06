@@ -1,4 +1,6 @@
-# 顧客要求書（Client Requirements）– AIチャットボット（Gemini）
+# 顧客要求書（Client Requirements）
+
+AIチャットボット（Gemini）
 
 ```
 Version: 1.1
