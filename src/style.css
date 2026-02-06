@@ -283,6 +283,12 @@ body.show-emoji-picker em-emoji-picker {
     visibility: visible;
 }
 
+.chat-form .chat-controls button:hover,
+body.show-emoji-picker .chat-controls #emoji-picker {
+    color: #3d39ac;
+    background: #f1f1ff;
+}
+
 .chat-form .chat-controls #send-message {
     color: #fff;
     display: none;

@@ -33,6 +33,7 @@ const closeChatbotBtn = document.querySelector("#close-chatbot");
 const fileInput = document.querySelector("#file-input");
 const fileUploadWrapper = document.querySelector(".file-upload-wrapper");
 const fileCancelBtn = document.querySelector("#file-cancel");
+const emojiPickerBtn = document.querySelector("#emoji-picker");
 
 
 /*************************************************
@@ -252,6 +253,26 @@ fileCancelBtn.addEventListener("click", () => {
   fileUploadWrapper.querySelector("img").src = "#";
   fileUploadWrapper.classList.remove("file-uploaded");
 });
+
+// Initialize emoji picker and handle emoji selection
+const picker = new EmojiMart.Picker({
+  theme: "light",
+  skinTonePosition: "none",
+  previewPosition: "none",
+  onEmojiSelect: (emoji) => {
+    const { selectionStart: start, selectionEnd: end } = messageInput;
+    messageInput.setRangeText(emoji.native, start, end, "end");
+    messageInput.focus();
+  },
+  onClickOutside: (e) => {
+    if (e.target.id === "emoji-picker") {
+      document.body.classList.toggle("show-emoji-picker");
+    } else {
+      document.body.classList.remove("show-emoji-picker");
+    }
+  },
+});
+document.querySelector(".chat-form").appendChild(picker);
 
 chatbotToggler.addEventListener("click", () =>
   document.body.classList.toggle("show-chatbot")
