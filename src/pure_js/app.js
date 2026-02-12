@@ -33,8 +33,7 @@ const closeChatbotBtn = document.querySelector("#close-chatbot");
 const fileInput = document.querySelector("#file-input");
 const fileUploadWrapper = document.querySelector(".file-upload-wrapper");
 const fileCancelBtn = document.querySelector("#file-cancel");
-const emojiPickerBtn = document.querySelector("#emoji-picker");
-
+// const emojiPickerBtn = document.querySelector("#emoji-picker");
 
 /*************************************************
  * Utilities
@@ -95,7 +94,7 @@ function createMessageElement(role, html) {
 
 function renderMessage(role, text, imageData = null) {
   let html;
-  
+
   if (role === "user") {
     html = `<div class="message-text">${text}</div>`;
     if (imageData) {
